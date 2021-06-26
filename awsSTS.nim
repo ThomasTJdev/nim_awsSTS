@@ -106,8 +106,8 @@ proc awsCredsCreateASIA(awsAccessKey, awsSecretKey, roleArn, serverRegion: strin
     urlRaw    = "sts." & serverRegion & ".amazonaws.com"
     url       = "https://" & urlRaw & "/"
 
-    secret    = awsSecretKey
     accessKey = awsAccessKey
+    secret    = awsSecretKey
 
     payload   = ""
     region    = serverRegion
@@ -117,11 +117,11 @@ proc awsCredsCreateASIA(awsAccessKey, awsSecretKey, roleArn, serverRegion: strin
 
     roleName  = roleSessionPrefix & $toInt(epochTime())
 
-    finalUrl  = url & "/?Action=AssumeRole&Version=2011-06-15&RoleArn=$1&RoleSessionName=$2&DurationSeconds=$3".format(encodeUrl(roleArn), encodeUrl(roleName), $duration)
+    finalUrl  = url & "?Action=AssumeRole&Version=2011-06-15&RoleArn=$1&RoleSessionName=$2&DurationSeconds=$3".format(encodeUrl(roleArn), encodeUrl(roleName), $duration)
 
     query = %* {
       "Action": "AssumeRole",
-      "DurationSeconds": $expirationInSec,
+      "DurationSeconds": $duration,
       "RoleArn": roleArn,
       "RoleSessionName": roleName,
       "Version": "2011-06-15",
@@ -151,6 +151,13 @@ proc awsCredsCreateASIA(awsAccessKey, awsSecretKey, roleArn, serverRegion: strin
 
   if not response.code.is2xx:
     echo("awsCredsCreateASIA(): Failed on 200: " & response.body)
+    awsCreds = AwsCreds(
+      AWS_REGION:             "",
+      AWS_ACCESS_KEY_ID:      "",
+      AWS_SECRET_ACCESS_KEY:  "",
+      AWS_SESSION_TOKEN:      "",
+      AWS_SESSION_EXPIRE:     0
+    )
     return
 
   when defined(dev):
