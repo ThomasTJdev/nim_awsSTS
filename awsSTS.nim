@@ -199,9 +199,7 @@ proc awsCredsMonitor*(awsAccessKey, awsSecretKey, roleArn, serverRegion: string,
   ## You can activate the monitor at anytime.
 
   while true:
-    # We are having a slack in 600 seconds when checking if valid, we therefor
-    # wait 550, so the slack on 50 seconds will force "notValid".
-    await sleepAsync((expirationInSec - 650) * 1000)
+    await sleepAsync((expirationInSec - (when defined(release): 600 else: 100)) * 1000)
 
     when defined(dev): echo "awsCredsMonitor(): Time - generating new"
     awsCredsCreateASIA(awsAccessKey, awsSecretKey, roleArn, serverRegion, duration)
