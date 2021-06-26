@@ -204,7 +204,7 @@ proc awsCredsMonitor*(awsAccessKey, awsSecretKey, roleArn, serverRegion: string,
     await sleepAsync((expirationInSec - 650) * 1000)
 
     when defined(dev): echo "awsCredsMonitor(): Time - generating new"
-    awsCredsCreateASIA(awsSecretKey, awsAccessKey, roleArn, serverRegion, duration)
+    awsCredsCreateASIA(awsAccessKey, awsSecretKey, roleArn, serverRegion, duration)
 
 
 proc awsCredentialGet*(awsAccessKey, awsSecretKey, roleArn, serverRegion: string, duration=expirationInSec, autoRenew=false): AwsCreds =
