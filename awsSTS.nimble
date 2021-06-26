@@ -1,4 +1,4 @@
-version       = "1.0.0"
+version       = "1.0.1"
 author        = "Thomas T. Jarløv (https://github.com/ThomasTJdev)"
 description   = "AWS Security Token Service API in Nim"
 license       = "MIT"
