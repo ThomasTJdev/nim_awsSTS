@@ -72,8 +72,9 @@ proc awsCredentialGet*(awsAccessKey, awsSecretKey, roleArn, serverRegion: string
 
 Returns the credentials. 
 
- Since our credentials are stored in a global `{.threadvar.}` this procedure needs to be called for each thread. Are you running single-threaded then no worries.
+Since our credentials are stored in a global `{.threadvar.}` this procedure needs to be called for each thread. Are you running single-threaded then no worries.
 
+Setting `autoRenew=true` enables `awsCredsMonitor()`.
 
 ____
 
