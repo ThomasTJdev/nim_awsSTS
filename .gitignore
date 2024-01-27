@@ -2,5 +2,8 @@ nimcache/
 nimblecache/
 htmldocs/
 
+tests/*
+!tests/*.nim*
+
 tester
-tester.nim
+tester.*
