@@ -17,6 +17,8 @@ in other services.
 # Example
 
 ```nim
+import awsSTS
+
 let
   myAccessKey   = "AKIDEXAMPLE"
   mySecretKey   = "23456OIUYTREXAMPLE"
@@ -33,6 +35,8 @@ echo creds.AWS_SESSION_TOKEN
 Auto-renew and keep credentials in global variable. Accessible from all threads.
 
 ```nim
+import awsSTS/sts
+
 let
   myAccessKey   = "AKIDEXAMPLE"
   mySecretKey   = "23456OIUYTREXAMPLE"
