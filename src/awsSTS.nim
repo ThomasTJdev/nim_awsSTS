@@ -128,8 +128,15 @@ proc awsSTScreateASIA(
 
   # GET data
   let
-    client      = newHttpClient(headers = headers)
+    client = newHttpClient(headers = headers)
+
+  var
+    response: Response
+
+  try:
     response    = client.get(finalUrl)
+  finally:
+    client.close()
 
   if not response.code.is2xx:
     echo("awsCredsCreateASIA(): Failed on 200: " & response.body)
