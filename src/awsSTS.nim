@@ -21,6 +21,9 @@ import
 import
   awsSigV4
 
+import ./awsSTS/pool
+export awsSTSInitHttpPool
+
 
 type
   AwsCreds* = ref object
@@ -77,7 +80,7 @@ proc awsParseXml(data: string): seq[string] =
   return @[xAccessKeyId, xSecretAccessKey, xSessionToken, xExpiration]
 
 
-proc awsSTScreateASIA(
+proc awsSTScreateASIA*(
     awsAccessKey, awsSecretKey, serverRegion, roleArn: string,
     duration = (when defined(dev): 900 else: 3600),
     roleSessionPrefix = (when defined(dev): "asia-dev-" else: "asia-release-")
@@ -127,16 +130,24 @@ proc awsSTScreateASIA(
   headers.add("Authorization", $SHA256 & " Credential=" & accessKey & "/" & scope & ", SignedHeaders=content-type;host;x-amz-date, Signature=" & signature)
 
   # GET data
-  let
-    client = newHttpClient(headers = headers)
+  when (
+    (compileOption("threads") and not defined(disableAwsStsHttpPool)) or
+    defined(awsStsHttpPool)
+  ):
+    var response: Response
+    globalPool.withClient(client, headers):  # Works without declaring client first
+      response = client.get(finalUrl)
+    headers = nil
 
-  var
-    response: Response
+  else:
+    var client: HttpClient
+    var response: Response
+    try:
+      client = newHttpClient(headers = headers)
+      response = client.get(finalUrl)
+    finally:
+      client.close()
 
-  try:
-    response    = client.get(finalUrl)
-  finally:
-    client.close()
 
   if not response.code.is2xx:
     echo("awsCredsCreateASIA(): Failed on 200: " & response.body)
@@ -188,7 +199,7 @@ proc awsSTSisExpired*(
 proc awsSTScreate*(
     awsAccessKey, awsSecretKey, serverRegion, roleArn: string,
     duration = (when defined(dev): 900 else: 3600)
-  ): AwsCreds =
+  ): AwsCreds {.deprecated.} =
   ## Returns the credentials.
 
   return awsSTScreateASIA(awsAccessKey, awsSecretKey, serverRegion, roleArn, duration)

@@ -13,11 +13,14 @@ This package is purely for generating ASIAxxxx credentials, which can be used
 in other services.
 
 
-
 # Example
+
+## General one time call
 
 ```nim
 import awsSTS
+
+awsSTSInitHttpPool(size = 5)
 
 let
   myAccessKey   = "AKIDEXAMPLE"
@@ -25,17 +28,21 @@ let
   role          = "arn:aws:iam::87654322345:role/Role-I-Can-And-May"
   serverRegion  = "eu-west-1"
 
-let creds = awsSTScreate(myAccessKey, mySecretKey, serverRegion, role)
+let creds = awsSTScreateASIA(myAccessKey, mySecretKey, serverRegion, role)
 
 echo creds.AWS_ACCESS_KEY_ID
 echo creds.AWS_SECRET_ACCESS_KEY
 echo creds.AWS_SESSION_TOKEN
 ```
 
+## Keep in global variable and auto-renew
+
 Auto-renew and keep credentials in global variable. Accessible from all threads.
 
 ```nim
 import awsSTS/sts
+
+awsSTSInitHttpPool(size = 5)
 
 let
   myAccessKey   = "AKIDEXAMPLE"
@@ -52,8 +59,32 @@ echo creds.AWS_SESSION_TOKEN
 
 
 
+# Reusable HttpClient pool
+
+In version 2.1.0, an HTTP pool was implemented to handle HTTP requests.
+The pool includes monitoring of consecutive errors, age of clients, and number of requests.
+Based on these, the clients will be recycled.
+
+The pool requires initialization with `awsSTSInitHttpPool(size = 5)`.
+
+The pool is **enabled** by default when using `--threads:on` (so always in
+Nim v2.x). The pool is **disabled** when using `-d:disableAwsStsHttpPool` and
+the method reverts back to using an individual HttpClient for each call.
+
+When running single-threaded, the pool is disabled by default. To enable the pool,
+use `-d:awsStsHttpPool`.
+
+On initialization, the pool will echo status. Disable this with
+`-d:awsStsHttpPoolNoEcho`.
+
+
 
 # Changelog
+
+## 2.1.0
+
+* Added http pool for reusing http clients.
+* Made `awsSTScreateASIA` public, so the wrapper `awsSTScreate` is not needed.
 
 ## v1.0.4
 

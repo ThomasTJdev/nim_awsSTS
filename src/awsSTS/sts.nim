@@ -1,12 +1,15 @@
 
 import
   std/[
+    exitprocs,
     locks
   ]
 
-import
-  ../awsSTS
+import ../awsSTS
 export AwsCreds
+
+import ./pool
+export awsSTSInitHttpPool
 
 var lock: Lock
 initLock(lock)
@@ -35,12 +38,23 @@ proc stsGet*(
       when defined(verboseSTS) or defined(testThreads):
         echo "STS expired, renewing..."
 
-      stsKey = awsSTScreate(
-                  awsAccessKey, awsSecretKey, serverRegion, roleArn,
-                  duration = duration
-                )
+      stsKey =
+        awsSTScreateASIA(
+          awsAccessKey, awsSecretKey,
+          serverRegion, roleArn,
+          duration = duration
+        )
       result = stsKey
 
   release(lock)
 
   return result
+
+
+proc cleanup() =
+  if stsKey != nil:
+    `=destroy`(stsKey)
+
+addExitProc(proc() =
+    cleanup()
+  )
